@@ -17,7 +17,9 @@ struct PS_INPUT
 float4 PS(PS_INPUT input) : SV_TARGET
 {
     float3 i;
-
+    
+    // -- 環境反射 --
+    // 面の色　×　環境光の輝度（面の向き、光源の方向は必要ない）
     i = materialAmbient.xyz * lightAmbient.xyz;
 
     return float4(i, 1.0);
