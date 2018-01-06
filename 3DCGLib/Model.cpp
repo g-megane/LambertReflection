@@ -31,28 +31,41 @@ namespace Lib
     {
         auto &directX = DirectX11::getInstance();
 
-        // ライトの色
-        float lightAmbient[4] = {
-            1.0f, 0.0f, 1.0f, 1.0f,
-        };
-        // オブジェクトの色
-        float materialAmbient[4] = {
-            1.0f, 1.0f, 1.0f, 1.0f,
-        };
+        float lightPos[4]         = { -2.0f, 2.0f, -1.0f,  0.0f };
+        float lightDiffuse[4]     = {  1.0f, 1.0f,  1.0f,  0.0f };
+        float lightSpecular[4]    = {  1.0f, 1.0f,  1.0f,  0.0f };
+        float lightAttenuate[4]   = {  1.0f, 0.1f,  0.1f,  0.0f };
+        float lightAmbient[4]     = {  0.2f, 0.2f,  0.2f,  0.0f };
+        float materialDiffuse[4]  = {  0.6f, 0.8f,  0.4f,  0.0f };
+        float materialSpecular[4] = {  0.8f, 0.8f,  0.8f, 20.0f };
+        float materialAmbient[4]  = {  0.6f, 0.8f,  0.4f,  0.0f };
 
         // コンスタントバッファの設定
-        ConstantBuffer cb;
-        cb.world           = Matrix::transpose(world);
-        cb.view            = Matrix::transpose(directX.getViewMatrix());
-        cb.projection      = Matrix::transpose(directX.getProjectionMatrix());
-        memcpy(cb.lightAmbient, lightAmbient, sizeof(lightAmbient));
-        memcpy(cb.materialAmbient, materialAmbient, sizeof(materialAmbient));
-        directX.getDeviceContext()->UpdateSubresource(constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+        ConstantBufferMatrix cbm;
+        cbm.world           = Matrix::transpose(world);
+        cbm.view            = Matrix::transpose(directX.getViewMatrix());
+        cbm.projection      = Matrix::transpose(directX.getProjectionMatrix());
+        //memcpy(cb.lightAmbient, lightAmbient, sizeof(lightAmbient));
+        //memcpy(cb.materialAmbient, materialAmbient, sizeof(materialAmbient));
+        directX.getDeviceContext()->UpdateSubresource(constantBufferMatrix.Get(), 0, nullptr, &cbm, 0, 0);
+
+        float eye[4] = { -directX.getViewMatrix().m41, -directX.getViewMatrix().m42, -directX.getViewMatrix().m43, 1.0f };
+        ConstantBufferLight cbl;
+        memcpy(cbl.eyePos,               eye,              sizeof(eye));
+        memcpy(cbl.ambient,              lightAmbient,     sizeof(lightAmbient));
+        memcpy(cbl.pointLight.pos,       lightPos,         sizeof(lightPos));
+        memcpy(cbl.pointLight.diffuse,   lightDiffuse,     sizeof(lightDiffuse));
+        memcpy(cbl.pointLight.specular,  lightSpecular,    sizeof(lightSpecular));
+        memcpy(cbl.pointLight.attenuate, lightAttenuate,   sizeof(lightAttenuate));
+        memcpy(cbl.material.ambient,     materialAmbient,  sizeof(materialAmbient));
+        memcpy(cbl.material.diffuse,     materialDiffuse,  sizeof(materialDiffuse));
+        memcpy(cbl.material.specular,    materialSpecular, sizeof(materialSpecular));
+        directX.getDeviceContext()->UpdateSubresource(constantBufferLight.Get(), 0, nullptr, &cbl, 0, 0);
 
         directX.getDeviceContext()->VSSetShader(vertexShader.Get(), nullptr, 0);
-        directX.getDeviceContext()->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        directX.getDeviceContext()->VSSetConstantBuffers(0, 1, constantBufferMatrix.GetAddressOf());
         directX.getDeviceContext()->PSSetShader(pixelShader.Get(), nullptr, 0);
-        directX.getDeviceContext()->PSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
+        directX.getDeviceContext()->PSSetConstantBuffers(0, 1, constantBufferLight.GetAddressOf());
         directX.getDeviceContext()->DrawIndexed(vertexCount, 0, 0);
     }
 
@@ -216,10 +229,20 @@ namespace Lib
 
         // ConstantBufferの作成
         bd.Usage          = D3D11_USAGE_DEFAULT;
-        bd.ByteWidth      = sizeof(ConstantBuffer);
+        bd.ByteWidth      = sizeof(ConstantBufferMatrix);
         bd.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
         bd.CPUAccessFlags = 0;
-        hr = directX.getDevice()->CreateBuffer(&bd, nullptr, constantBuffer.GetAddressOf());
+        hr = directX.getDevice()->CreateBuffer(&bd, nullptr, constantBufferMatrix.GetAddressOf());
+        if (FAILED(hr)) {
+            MessageBox(nullptr, L"createBuffer()の失敗", L"Error", MB_OK);
+            return hr;
+        }
+
+        bd.Usage          = D3D11_USAGE_DEFAULT;
+        bd.ByteWidth      = sizeof(ConstantBufferLight);
+        bd.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
+        bd.CPUAccessFlags = 0;
+        hr = directX.getDevice()->CreateBuffer(&bd, nullptr, constantBufferLight.GetAddressOf());
         if (FAILED(hr)) {
             MessageBox(nullptr, L"createBuffer()の失敗", L"Error", MB_OK);
             return hr;
@@ -375,10 +398,20 @@ namespace Lib
 
         // ConstantBufferの作成
         bd.Usage          = D3D11_USAGE_DEFAULT;
-        bd.ByteWidth      = sizeof(ConstantBuffer);
+        bd.ByteWidth      = sizeof(ConstantBufferMatrix);
         bd.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
         bd.CPUAccessFlags = 0;
-        hr = directX.getDevice()->CreateBuffer(&bd, nullptr, constantBuffer.GetAddressOf());
+        hr = directX.getDevice()->CreateBuffer(&bd, nullptr, constantBufferMatrix.GetAddressOf());
+        if (FAILED(hr)) {
+            MessageBox(nullptr, L"createBuffer()の失敗", L"Error", MB_OK);
+            return hr;
+        }
+
+        bd.Usage          = D3D11_USAGE_DEFAULT;
+        bd.ByteWidth      = sizeof(ConstantBufferLight);
+        bd.BindFlags      = D3D11_BIND_CONSTANT_BUFFER;
+        bd.CPUAccessFlags = 0;
+        hr = directX.getDevice()->CreateBuffer(&bd, nullptr, constantBufferLight.GetAddressOf());
         if (FAILED(hr)) {
             MessageBox(nullptr, L"createBuffer()の失敗", L"Error", MB_OK);
             return hr;

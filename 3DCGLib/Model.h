@@ -31,13 +31,34 @@ namespace Lib
             float normal[3];
         };
 
-        struct ConstantBuffer
+        struct ConstantBufferMatrix
         {
             Matrix world;
             Matrix view;
             Matrix projection;
-            float  lightAmbient[4];
-            float  materialAmbient[4];
+        };
+
+        struct Light
+        {
+            float pos[4];
+            float diffuse[4];
+            float specular[4];
+            float attenuate[4];
+        };
+
+        struct Material
+        {
+            float ambient[4];
+            float diffuse[4];
+            float specular[4];
+        };
+
+        struct ConstantBufferLight
+        {
+            float    eyePos[4];
+            float    ambient[4];
+            Light    pointLight;
+            Material material;
         };
 
         ComPtr<ID3D11VertexShader>     vertexShader;
@@ -45,7 +66,8 @@ namespace Lib
         ComPtr<ID3D11InputLayout>      vertexLayout;
         ComPtr<ID3D11Buffer>           vertexBuffer;
         ComPtr<ID3D11Buffer>           indexBuffer;
-        ComPtr<ID3D11Buffer>           constantBuffer;
+        ComPtr<ID3D11Buffer>           constantBufferMatrix;
+        ComPtr<ID3D11Buffer>           constantBufferLight;
 
         Matrix world;
         int vertexCount;
