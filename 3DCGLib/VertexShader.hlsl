@@ -4,8 +4,6 @@ cbuffer ConstantBuffer : register(b0)
     matrix World;           // ワールド行列
     matrix View;            // ビュー行列
     matrix Projection;      // 射影行列
-    float4 lightAmbient;    // 環境光
-    float4 materialAmbient; // 物体の色
 }
 
 struct VS_INPUT
