@@ -41,7 +41,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     directX.setProjectionMatrix(projection);
     
     // ÉÇÉfÉãÇÃçÏê¨
-    Model model = Model();
+    Model model = Model(36);
     Matrix world;
     world = Matrix::Identify;
 
