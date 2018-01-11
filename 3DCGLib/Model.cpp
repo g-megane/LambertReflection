@@ -9,6 +9,7 @@ namespace Lib
     Model::Model()
     {
         world = Matrix::Identify;
+        light = Vector3(-2.0, 2.0, -1.0);
         vertexCount = 0;
         init();
     }
@@ -17,6 +18,7 @@ namespace Lib
     Model::Model(const int SEGMENT)
     {
         world = Matrix::Identify;
+        light = Vector3(-2.0, 2.0, -1.0);
         vertexCount = 0;
         initSqhere(SEGMENT);
     }
@@ -31,7 +33,7 @@ namespace Lib
     {
         auto &directX = DirectX11::getInstance();
 
-        float lightPos[4]         = { -2.0f, 2.0f, -1.0f,  0.0f };
+        float lightPos[4]         = {  light.x, light.y, light.z,  0.0f };
         float lightDiffuse[4]     = {  1.0f, 1.0f,  1.0f,  0.0f };
         float lightSpecular[4]    = {  1.0f, 1.0f,  1.0f,  0.0f };
         float lightAttenuate[4]   = {  1.0f, 0.1f,  0.1f,  0.0f };
@@ -45,8 +47,6 @@ namespace Lib
         cbm.world           = Matrix::transpose(world);
         cbm.view            = Matrix::transpose(directX.getViewMatrix());
         cbm.projection      = Matrix::transpose(directX.getProjectionMatrix());
-        //memcpy(cb.lightAmbient, lightAmbient, sizeof(lightAmbient));
-        //memcpy(cb.materialAmbient, materialAmbient, sizeof(materialAmbient));
         directX.getDeviceContext()->UpdateSubresource(constantBufferMatrix.Get(), 0, nullptr, &cbm, 0, 0);
 
         float eye[4] = { -directX.getViewMatrix().m41, -directX.getViewMatrix().m42, -directX.getViewMatrix().m43, 1.0f };
@@ -67,6 +67,20 @@ namespace Lib
         directX.getDeviceContext()->PSSetShader(pixelShader.Get(), nullptr, 0);
         directX.getDeviceContext()->PSSetConstantBuffers(0, 1, constantBufferLight.GetAddressOf());
         directX.getDeviceContext()->DrawIndexed(vertexCount, 0, 0);
+
+        // ライト用モデル
+        auto mtLight  = Matrix::Identify;
+        auto mttLight = Matrix::translate(Vector3(lightPos[0], lightPos[1], lightPos[2]));
+        auto mtsLight = Matrix::scale(0.1f, 0.1f, 0.1f);
+        mtLight = mtsLight * mttLight;
+       
+        cbm.world      = Matrix::transpose(mtLight);
+        directX.getDeviceContext()->UpdateSubresource(constantBufferMatrix.Get(), 0, nullptr, &cbm, 0, 0);
+
+        directX.getDeviceContext()->VSSetShader(vertexShader.Get(), nullptr, 0);
+        directX.getDeviceContext()->VSSetConstantBuffers(0, 1, constantBufferMatrix.GetAddressOf());
+        directX.getDeviceContext()->PSSetShader(pixelShader.Get(), nullptr, 0);
+        directX.getDeviceContext()->DrawIndexed(vertexCount, 0, 0);
     }
 
     // ワールド行列を設定
@@ -79,6 +93,11 @@ namespace Lib
     Matrix Model::getWorldMatrix() const
     {
         return world;
+    }
+
+    Vector3& Model::getLightPos()
+    {
+        return light;
     }
 
     // 初期化

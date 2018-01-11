@@ -19,6 +19,8 @@ namespace Lib
 
         void setWorldMatrix(Matrix &_world);
         Matrix getWorldMatrix() const;
+
+        Vector3& getLightPos();
         
     private:
         HRESULT init();
@@ -70,6 +72,7 @@ namespace Lib
         ComPtr<ID3D11Buffer>           constantBufferLight;
 
         Matrix world;
+        Vector3 light;
         int vertexCount;
     };
 }
