@@ -44,7 +44,6 @@ namespace Lib
         {
             float pos[4];
             float diffuse[4];
-            float specular[4];
             float attenuate[4];
         };
 
@@ -52,7 +51,6 @@ namespace Lib
         {
             float ambient[4];
             float diffuse[4];
-            float specular[4];
         };
 
         struct ConstantBufferLight

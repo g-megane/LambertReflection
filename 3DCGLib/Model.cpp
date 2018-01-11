@@ -35,11 +35,9 @@ namespace Lib
 
         float lightPos[4]         = {  light.x, light.y, light.z,  0.0f };
         float lightDiffuse[4]     = {  1.0f, 1.0f,  1.0f,  0.0f };
-        float lightSpecular[4]    = {  1.0f, 1.0f,  1.0f,  0.0f };
         float lightAttenuate[4]   = {  1.0f, 0.1f,  0.1f,  0.0f };
         float lightAmbient[4]     = {  0.2f, 0.2f,  0.2f,  0.0f };
         float materialDiffuse[4]  = {  0.6f, 0.8f,  0.4f,  0.0f };
-        float materialSpecular[4] = {  0.8f, 0.8f,  0.8f, 20.0f };
         float materialAmbient[4]  = {  0.6f, 0.8f,  0.4f,  0.0f };
 
         // コンスタントバッファの設定
@@ -55,11 +53,9 @@ namespace Lib
         memcpy(cbl.ambient,              lightAmbient,     sizeof(lightAmbient));
         memcpy(cbl.pointLight.pos,       lightPos,         sizeof(lightPos));
         memcpy(cbl.pointLight.diffuse,   lightDiffuse,     sizeof(lightDiffuse));
-        memcpy(cbl.pointLight.specular,  lightSpecular,    sizeof(lightSpecular));
         memcpy(cbl.pointLight.attenuate, lightAttenuate,   sizeof(lightAttenuate));
         memcpy(cbl.material.ambient,     materialAmbient,  sizeof(materialAmbient));
         memcpy(cbl.material.diffuse,     materialDiffuse,  sizeof(materialDiffuse));
-        memcpy(cbl.material.specular,    materialSpecular, sizeof(materialSpecular));
         directX.getDeviceContext()->UpdateSubresource(constantBufferLight.Get(), 0, nullptr, &cbl, 0, 0);
 
         directX.getDeviceContext()->VSSetShader(vertexShader.Get(), nullptr, 0);
