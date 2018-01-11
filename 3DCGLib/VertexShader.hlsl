@@ -25,7 +25,7 @@ PS_INPUT VS(VS_INPUT input)
     output.PosW = mul(input.Pos, World);
     output.Pos  = mul(output.PosW, View);
     output.Pos  = mul(output.Pos, Projection);
-    output.NorW = mul(input.Norm, World);
+    output.NorW = mul(float4(input.Norm, 0.0), World);
 
     return output;
 }
