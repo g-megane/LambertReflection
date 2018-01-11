@@ -11,7 +11,7 @@
 using namespace Lib;
 
 const float FPS   = 60.0f;   // 実行したいfps
-const float SPEED = 1800.0f; // モデルの移動速度
+const float SPEED = 0.001f; // モデルの移動速度
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -45,8 +45,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     Matrix world;
     world = Matrix::Identify;
 
-    float rotX = 0.0f;
-    float rotY = 0.0f;
+    float posX = 0.0f;
+    float posY = 0.0f;
+    float posZ = 0.0f;
 
     // 説明
     MessageBox(w->getHWND(), L"「W」「A」「S」「D」でモデルの回転", L"操作説明", MB_OK | MB_ICONINFORMATION);
@@ -60,7 +61,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     WCHAR wcstr[50];
     size_t size = 0;
     setlocale(LC_ALL, "japanese"); // 後のmbstowcs_sの為の処理
-    
+ 
     while (w->Update().message != WM_QUIT) {
         directX.begineFrame();
 
@@ -86,30 +87,30 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         time.reset();
         ++fps;
 
-        // 回転
+        // 移動        
+        posX = posY = posZ = 0.0f;
+
         if (w->getKeyDown('W')) {
-            rotX += MyMath::PIDIV2 / SPEED * deltaTime;
+            posZ = SPEED * deltaTime;
         }
-        if (w->getKeyDown('S')) {
-            rotX -= MyMath::PIDIV2 / SPEED * deltaTime;
+        else if (w->getKeyDown('S')) {
+            posZ = -SPEED * deltaTime;
         }
         if (w->getKeyDown('A')) {
-            rotY += MyMath::PIDIV2 / SPEED * deltaTime;
+            posX = -SPEED * deltaTime;
         }
-        if (w->getKeyDown('D')) {
-            rotY -= MyMath::PIDIV2 / SPEED * deltaTime;
+        else if (w->getKeyDown('D')) {
+            posX = SPEED * deltaTime;
+        }
+        if (w->getKeyDown('E')) {
+            posY = SPEED * deltaTime;
+        }
+        else if (w->getKeyDown('Q')) {
+            posY = -SPEED * deltaTime;
         }
 
-        // オーバーフローの制御
-        rotX = MyMath::rollup<float>(rotX, MyMath::PI2);
-        rotY = MyMath::rollup<float>(rotY, MyMath::PI2);
-
-        // モデルの制御
-        auto mtrX = Matrix::rotateX(rotX);
-        auto mtrY = Matrix::rotateY(rotY);
-        auto mtt  = Matrix::translate(Vector3(0.0f, -1.0f, 0.0f));
-        world = mtrX * mtrY * mtt;
-        model.setWorldMatrix(world);
+        // ライトのモデルの制御
+        model.getLightPos().translate(posX, posY, posZ);
 
         // 描画
         model.render(Lib::Color(Lib::Color::BLUE));
